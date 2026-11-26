@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZCU670 · Aurora SFP loopback block diagram</title><style>
+    :root { color-scheme: light; --ink:#172a3d; --muted:#596b7d; --line:#dce3eb; --teal:#007d73; --purple:#7350b4; --gold:#a56a06; --paper:#fff; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:#f4f6f9; color:var(--ink); font:15px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    main { max-width:1540px; margin:auto; padding:42px 34px 28px; }
+    .eyebrow { display:flex; align-items:center; flex-wrap:wrap; gap:12px; font-size:12px; font-weight:650; letter-spacing:.11em; text-transform:uppercase; color:var(--muted); }
+    .board { background:var(--ink); color:white; border-radius:5px; padding:4px 9px; letter-spacing:.08em; }
+    h1 { font-size:clamp(28px,3.4vw,43px); line-height:1.15; letter-spacing:-.035em; margin:17px 0 12px; font-weight:650; }
+    .intro { margin:0; max-width:850px; color:var(--muted); font-size:17px; }
+    .facts { display:flex; flex-wrap:wrap; gap:9px; margin:22px 0 25px; }
+    .fact { padding:5px 10px; border:1px solid var(--line); border-radius:5px; background:white; font-size:13px; }
+    .fact.ready { background:#e7f5f1; border-color:#c0e3da; color:#116052; }
+    .fact.pending { background:#fff5e3; border-color:#ebd8ae; color:#815b16; }
+    .context-note { border-left:3px solid var(--teal); background:#eaf6f2; padding:14px 18px; margin:0 0 25px; max-width:1100px; }
+    .context-note > strong { display:block; margin-bottom:6px; }
+    .context-note p { margin:5px 0; }
+    .sheet { background:var(--paper); border:1px solid var(--line); border-radius:12px; box-shadow:0 6px 24px #20364c05; overflow:hidden; }
+    .toolbar { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px; padding:17px 21px; border-bottom:1px solid var(--line); }
+    .tabs { display:flex; flex-wrap:wrap; gap:5px; }
+    button { font:inherit; cursor:pointer; border-radius:6px; padding:8px 13px; border:1px solid var(--line); background:white; color:var(--ink); }
+    button:hover { background:#f2f5f8; }
+    button:focus-visible, a:focus-visible { outline:3px solid #168dcd; outline-offset:4px; }
+    .tab { border-color:transparent; font-weight:550; font-size:14px; }
+    .tab[aria-selected="true"] { background:var(--ink); color:white; }
+    .export { font-size:13px; padding:7px 12px; }
+    .legend { display:flex; flex-wrap:wrap; align-items:center; gap:18px; padding:13px 24px 0; color:var(--muted); font-size:12px; }
+    .legend span { display:flex; align-items:center; gap:7px; }
+    .swatch { display:inline-block; width:24px; border-top:3px solid var(--teal); }
+    .swatch.clock { border-color:var(--gold); border-top-width:2px; }
+    .swatch.control { border-color:var(--purple); border-top-width:2px; }
+    .swatch.status { border-color:#61788f; border-top-width:2px; }
+    .swatch.external { border-color:#176b8b; border-top:3px solid #176b8b; }
+    .diagram-scroll { overflow-x:auto; }
+    .diagram-svg { display:block; width:100%; min-width:1000px; height:auto; }
+    [hidden] { display:none!important; }
+    .diagram-caption { margin:0; padding:0 25px 19px; font-size:13px; color:var(--muted); }
+    .detail { display:grid; grid-template-columns:minmax(240px,.9fr) minmax(320px,1.4fr); gap:32px; padding:25px 28px 27px; border-top:1px solid var(--line); background:#fbfcfe; }
+    .detail-kicker { font-size:11px; font-weight:650; text-transform:uppercase; letter-spacing:.12em; color:var(--teal); margin-bottom:7px; }
+    .detail h2 { margin:0 0 9px; font-size:21px; letter-spacing:-.02em; }
+    .detail p { margin:0 0 13px; color:var(--muted); }
+    .source { font-size:12px; overflow-wrap:anywhere; }
+    a { color:#176b8b; text-underline-offset:3px; }
+    code { font: .91em ui-monospace,SFMono-Regular,Consolas,monospace; background:#edf1f5; padding:2px 5px; border-radius:3px; overflow-wrap:anywhere; }
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th { text-align:left; color:var(--muted); font-size:11px; font-weight:650; text-transform:uppercase; letter-spacing:.06em; padding:0 12px 10px 0; }
+    td { border-top:1px solid var(--line); padding:9px 12px 9px 0; vertical-align:top; }
+    td:first-child { width:42%; }
+    .notes { display:grid; grid-template-columns:1fr 1fr; gap:25px; margin:23px 0; }
+    .note { border-left:3px solid #c7d4df; padding-left:15px; color:var(--muted); font-size:13px; }
+    .note strong { display:block; color:var(--ink); font-weight:600; margin-bottom:4px; }
+    footer { display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; padding-top:15px; border-top:1px solid var(--line); font-size:12px; color:var(--muted); }
+    .footer-links { display:flex; flex-wrap:wrap; gap:17px; }
+    @media(max-width:720px) { main{padding:25px 15px 20px;} .toolbar{padding:12px;} .detail{grid-template-columns:1fr;padding:20px;gap:15px;} .notes{grid-template-columns:1fr;gap:16px;} .intro{font-size:15px;} }
+    @media print { @page{size:landscape;margin:10mm;} body{background:white;} main{padding:0;max-width:none;} h1{font-size:27px;} .toolbar,.detail,.notes,footer{display:none;} .sheet{border:0;box-shadow:none;} .diagram-svg{min-width:0;} .facts{margin:12px 0;} .legend{padding-top:0;} }
+  
+.diagram-svg { min-width:1100px; }
+.context-note { max-width:none; }
+.diagram-caption { padding-top:9px; }
+.diagram-svg a.selected { outline:none; }
+.source a { display:inline-block; margin-top:4px; }
+.detail { min-height:300px; }
+.tab[aria-selected="false"] { color:#486174; }
+@media print { .diagram-svg { min-width:0; } .context-note { padding:8px 12px; font-size:12px; } }
+</style></head><body><main>
+<header>
+  <div class="eyebrow"><span class="board">ZCU670</span><span>Aurora 64B/66B · IP Integrator</span></div>
+  <h1>Aurora SFP loopback: two cores, one FPGA</h1>
+  <p class="intro">Follow the payload from the frame generator through SFP0, the cable and SFP1 to the checker. Select a block to inspect its signals, or change views to trace the clocks, resets and testbench.</p>
+  <div class="facts"><span class="fact">2 Aurora cores · 1 GTY lane each</span><span class="fact">10.3125 Gb/s · 64-bit AXI streams</span><span class="fact">SFP0 ↔ SFP1</span><span class="fact ready">GTY normal mode: 3'b000</span></div>
+  <aside class="context-note"><strong>Both Aurora cores are part of the hardware.</strong><p>One generator sends payload through Aurora 0 to Aurora 1. A local golden-reference FIFO records the transmitted words for comparison. Aurora 1's application TX is idle; the reverse serial path still carries Aurora link traffic.</p></aside>
+</header>
+<section class="sheet" aria-label="Interactive Aurora block diagram"><div class="toolbar">
+<div class="tabs" role="tablist" aria-label="Diagram view"><button class="tab" id="tab-data" type="button" role="tab" aria-selected="true" aria-controls="panel-data" tabindex="0" data-view="data">Data path &amp; SFP cable</button><button class="tab" id="tab-clock" type="button" role="tab" aria-selected="false" aria-controls="panel-clock" tabindex="-1" data-view="clock">Clock &amp; reset</button><button class="tab" id="tab-simulation" type="button" role="tab" aria-selected="false" aria-controls="panel-simulation" tabindex="-1" data-view="simulation">Simulation testbench</button></div><button class="export" id="export-svg" type="button">Save this view as SVG</button></div>
+<div class="legend" aria-label="Signal legend"><span><i class="swatch"></i>Payload / forward link</span><span><i class="swatch clock"></i>Clock</span><span><i class="swatch control"></i>Reset / control</span><span><i class="swatch status"></i>Status</span><span><i class="swatch external"></i>Reverse serial link</span></div><div id="panel-data" role="tabpanel" aria-labelledby="tab-data" tabindex="0"><div class="diagram-scroll"><svg xmlns="http://www.w3.org/2000/svg" id="diagram-data" class="diagram-svg" width="1520" height="1000" viewBox="0 0 1520 1000" role="img" aria-labelledby="data-title data-desc">
+<title id="data-title">Aurora SFP loopback: hardware data path</title><desc id="data-desc">One ZCU670 FPGA contains a frame generator, a golden-reference FIFO, a frame checker, two Aurora cores and ILA. Aurora 0 transmits payload through SFP0 and an external duplex cable to Aurora 1 on SFP1. Aurora 1 supplies the checker. Its transmit application interface is idle. Both transceivers use normal mode 000.</desc>
+<defs><style>
+svg { font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#fff; }
+text { fill:#172a3d; font-size:17px; }
+.title { font-size:24px; font-weight:650; letter-spacing:-.02em; }
+.heading { font-size:20px; font-weight:620; }
+.small { font-size:15px; fill:#596b7d; }
+.tiny { font-size:13px; fill:#596b7d; }
+.mono { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:14px; }
+.scope { fill:#fafcfe; stroke:#b9c9d7; stroke-width:1.5; }
+.nodebox { fill:#fff; stroke:#bdcedb; stroke-width:1.5; }
+.payloadbox { fill:#f0faf7; stroke:#a0cfc0; }
+.clockbox { fill:#fff9ed; stroke:#ddc99b; }
+.controlbox { fill:#f7f2fc; stroke:#cfbfe3; }
+.statusbox { fill:#f2f6fb; stroke:#b7c8da; }
+.cagebox { fill:#eef6fb; stroke:#9dbdd2; }
+.banner { fill:#eef4f8; }
+.divider { stroke:#dbe4ec; stroke-width:1; }
+.data { fill:none; stroke:#007d73; stroke-width:3.2; stroke-linejoin:round; }
+.ready { fill:none; stroke:#007d73; stroke-width:1.7; stroke-dasharray:5 4; }
+.clock { fill:none; stroke:#a56a06; stroke-width:2.4; stroke-linejoin:round; }
+.control { fill:none; stroke:#7350b4; stroke-width:2.4; stroke-linejoin:round; }
+.status { fill:none; stroke:#61788f; stroke-width:2; stroke-linejoin:round; }
+.serial { fill:none; stroke:#176b8b; stroke-width:2.6; stroke-linejoin:round; }
+.label { font-size:14px; fill:#486174; paint-order:stroke; stroke:#fff; stroke-width:5; stroke-linejoin:round; }
+.port { font-size:13px; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; fill:#486174; }
+.selected .nodebox { stroke:#007d73; stroke-width:3; }
+a { cursor:pointer; text-decoration:none; }
+a:hover .nodebox { stroke:#4a8e9c; stroke-width:2.5; }
+a:focus-visible { outline:3px solid #168dcd; outline-offset:4px; }
+</style>
+<marker id="data-data-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#007d73"/></marker>
+<marker id="data-clock-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#a56a06"/></marker>
+<marker id="data-control-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#7350b4"/></marker>
+<marker id="data-status-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#61788f"/></marker>
+<marker id="data-serial-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#176b8b"/></marker>
+</defs>
+<rect x="0" y="0" width="1520" height="1000" rx="9" class="" fill="#fff" stroke="none"/>
+<text x="36" y="43" class="title" >Hardware data path</text>
+<text x="36" y="72" class="small" >Both Aurora endpoints are synthesized in the same FPGA. The cable connects the two SFP cages.</text>
+<rect x="32" y="105" width="1154" height="815" rx="9" class="scope" />
+<text x="54" y="137" class="mono" >ZCU670 FPGA · aurora_system_wrapper → aurora_system</text>
+<text x="1230" y="178" class="small" >Board connectors</text>
+<text x="1230" y="199" class="small" >+ external cable</text>
+<path d="M330 278 H625" class="data" marker-end="url(#data-data-arrow)"/>
+<text x="408" y="260" class="label" >64-bit AXI TX</text>
+<path d="M625 315 H330" class="ready" marker-end="url(#data-data-arrow)"/>
+<text x="415" y="338" class="label" >TREADY from Aurora 0</text>
+<path d="M430 278 V430 H205 V480" class="data" marker-end="url(#data-data-arrow)"/>
+<circle cx="430" cy="278" r="4" fill="#007d73"/>
+<text x="79" y="454" class="label" >Monitor accepted TX words</text>
+<path d="M575 530 H596 V555 H625" class="data" marker-end="url(#data-data-arrow)"/>
+<path d="M625 630 H465 V785 H370" class="data" marker-end="url(#data-data-arrow)"/>
+<text x="487" y="687" class="label" >RX AXIS</text>
+<text x="487" y="709" class="tiny" >64-bit payload</text>
+<path d="M205 645 V725" class="data" marker-end="url(#data-data-arrow)"/>
+<text x="98" y="683" class="label" >REF_PORT</text>
+<path d="M285 725 V645" class="ready" marker-end="url(#data-data-arrow)"/>
+<text x="290" y="708" class="tiny" >ready</text>
+<path d="M70 600 H50 V780 H70" class="status" marker-end="url(#data-status-arrow)"/>
+<text x="41" y="690" class="tiny" transform="rotate(-90 41 690)" text-anchor="middle">overflow</text>
+<path d="M370 825 H670" class="status" marker-end="url(#data-status-arrow)"/>
+<text x="399" y="851" class="label" >Checker flags and counters</text>
+<path d="M1145 278 H1220" class="data" marker-end="url(#data-data-arrow)"/>
+<path d="M1220 345 H1145" class="serial" marker-end="url(#data-serial-arrow)"/>
+<path d="M1145 555 H1220" class="serial" marker-end="url(#data-serial-arrow)"/>
+<path d="M1220 625 H1145" class="data" marker-end="url(#data-data-arrow)"/>
+<path d="M1400 278 H1480 V625 H1400" class="data" marker-end="url(#data-data-arrow)"/>
+<path d="M1400 555 H1440 V345 H1400" class="serial" marker-end="url(#data-serial-arrow)"/>
+<text x="1501" y="475" class="tiny" transform="rotate(-90 1501 475)" text-anchor="middle">SFP0 TX → SFP1 RX · payload</text>
+<text x="1461" y="452" class="tiny" transform="rotate(-90 1461 452)" text-anchor="middle">SFP1 TX → SFP0 RX · link traffic</text>
+<a href="#block-details" data-node="generator" aria-label="Frame generator"><title>Frame generator — select to inspect connections</title>
+<rect x="70" y="215" width="260" height="130" rx="9" class="nodebox payloadbox" />
+<text x="89" y="247" class="heading" style="font-size:20.00px">Frame generator</text>
+<text x="89" y="272" class="mono" style="font-size:14.00px">frame_generator_0</text>
+<text x="89" y="302" class="small" style="font-size:14.08px">Counter data · 16 words/frame</text>
+</a>
+<a href="#block-details" data-node="fifo" aria-label="Golden-reference FIFO"><title>Golden-reference FIFO — select to inspect connections</title>
+<rect x="70" y="480" width="270" height="165" rx="9" class="nodebox payloadbox" />
+<text x="89" y="512" class="heading" style="font-size:17.76px">Golden-reference FIFO</text>
+<text x="89" y="537" class="mono" style="font-size:14.00px">golden_reference_fifo_0</text>
+<text x="89" y="567" class="small" style="font-size:15.00px">Stores DATA / KEEP / LAST</text>
+<text x="89" y="590" class="small" style="font-size:15.00px">256 words · passive monitor</text>
+<text x="89" y="613" class="small" style="font-size:15.00px">Overflow is reported as error</text>
+</a>
+<a href="#block-details" data-node="idle" aria-label="Idle TX source"><title>Idle TX source — select to inspect connections</title>
+<rect x="385" y="480" width="190" height="100" rx="9" class="nodebox statusbox" />
+<text x="404" y="512" class="heading" style="font-size:18.50px">Idle TX source</text>
+<text x="404" y="537" class="mono" style="font-size:14.00px">aurora_tx_idle_0</text>
+<text x="404" y="567" class="small" style="font-size:15.00px">TVALID = 0</text>
+</a>
+<a href="#block-details" data-node="checker" aria-label="Frame checker"><title>Frame checker — select to inspect connections</title>
+<rect x="70" y="725" width="300" height="130" rx="9" class="nodebox payloadbox" />
+<text x="89" y="757" class="heading" style="font-size:20.00px">Frame checker</text>
+<text x="89" y="782" class="mono" style="font-size:14.00px">frame_checker_0</text>
+<text x="89" y="812" class="small" style="font-size:15.00px">Compare RX with FIFO head</text>
+</a>
+<a href="#block-details" data-node="aurora0" aria-label="Aurora 0 · GTY X0Y0"><title>Aurora 0 · GTY X0Y0 — select to inspect connections</title>
+<rect x="625" y="205" width="520" height="195" rx="9" class="nodebox" />
+<text x="645" y="236" class="heading" >Aurora 0 · GTY X0Y0</text>
+<text x="645" y="260" class="mono" >aurora_64b66b_0</text>
+<text x="645" y="286" class="port" >S_AXIS_TX → Aurora TX → TXP/TXN</text>
+<text x="645" y="341" class="small" >RX AXIS output unused</text>
+<rect x="635" y="358" width="500" height="32" rx="9" class="banner" />
+<text x="646" y="380" class="tiny" >Shared logic inside: reference buffer / QPLL / clocks</text>
+</a>
+<a href="#block-details" data-node="aurora1" aria-label="Aurora 1 · GTY X0Y1"><title>Aurora 1 · GTY X0Y1 — select to inspect connections</title>
+<rect x="625" y="495" width="520" height="195" rx="9" class="nodebox" />
+<text x="645" y="526" class="heading" >Aurora 1 · GTY X0Y1</text>
+<text x="645" y="550" class="mono" >aurora_64b66b_1</text>
+<text x="645" y="567" class="small" >TX application input held idle</text>
+<text x="645" y="637" class="port" >M_AXIS_RX ← Aurora RX ← RXP/RXN</text>
+<rect x="635" y="648" width="500" height="32" rx="9" class="banner" />
+<text x="646" y="670" class="tiny" >Shared logic outside: support signals from Aurora 0</text>
+</a>
+<a href="#block-details" data-node="sfp0" aria-label="SFP0 connector and package pins"><title>SFP0 connector and package pins — select to inspect connections</title>
+<rect x="1220" y="225" width="180" height="160" rx="9" class="nodebox cagebox" />
+<text x="1240" y="254" class="heading" >SFP0</text>
+<text x="1240" y="282" class="mono" >TXP / TXN</text>
+<text x="1240" y="303" class="tiny" >N30 / N31</text>
+<text x="1240" y="347" class="mono" >RXP / RXN</text>
+<text x="1240" y="368" class="tiny" >P33 / P34</text>
+</a>
+<a href="#block-details" data-node="sfp1" aria-label="SFP1 connector and package pins"><title>SFP1 connector and package pins — select to inspect connections</title>
+<rect x="1220" y="502" width="180" height="160" rx="9" class="nodebox cagebox" />
+<text x="1240" y="531" class="heading" >SFP1</text>
+<text x="1240" y="559" class="mono" >TXP / TXN</text>
+<text x="1240" y="580" class="tiny" >L30 / L31</text>
+<text x="1240" y="624" class="mono" >RXP / RXN</text>
+<text x="1240" y="645" class="tiny" >M33 / M34</text>
+</a>
+<a href="#block-details" data-node="ila" aria-label="ILA status monitor"><title>ILA status monitor — select to inspect connections</title>
+<rect x="670" y="735" width="475" height="130" rx="9" class="nodebox statusbox" />
+<text x="689" y="767" class="heading" style="font-size:20.00px">ILA status monitor</text>
+<text x="689" y="792" class="mono" style="font-size:14.00px">ila_0 · 7 probes · 1024 samples</text>
+<text x="689" y="822" class="small" style="font-size:15.00px">Channel status · app reset · checker flags/counters</text>
+<text x="689" y="845" class="small" style="font-size:15.00px">FIFO overflow · sampled on user_clk_out</text>
+</a>
+<text x="1240" y="718" class="small" >Normal GTY operation</text>
+<text x="1240" y="743" class="mono" >loopback = 3&#x27;b000</text>
+<text x="1240" y="780" class="tiny" >Reverse serial traffic keeps</text>
+<text x="1240" y="800" class="tiny" >the duplex link running;</text>
+<text x="1240" y="820" class="tiny" >application TVALID stays 0.</text>
+<rect x="70" y="877" width="1075" height="28" rx="9" class="banner" />
+<text x="84" y="897" class="tiny" >Clock, startup reset, channel enable and fixed controls: open the Clock &amp; reset view.</text>
+<text x="36" y="956" class="small" >The FIFO records the actual transmitted words; the checker does not regenerate the pattern.</text>
+<text x="36" y="980" class="tiny" >Solid green: data path. Dashed green: ready handshake. Blue: reverse serial link. Grey: status.</text>
+</svg></div><p class="diagram-caption">Select a block to inspect its ports below. Clock/reset wiring and the channel-ready gates are shown in the next view. The two SFP connectors and the cable are outside the FPGA boundary.</p></div><div id="panel-clock" role="tabpanel" aria-labelledby="tab-clock" tabindex="0" hidden><div class="diagram-scroll"><svg xmlns="http://www.w3.org/2000/svg" id="diagram-clock" class="diagram-svg" width="1520" height="1160" viewBox="0 0 1520 1160" role="img" aria-labelledby="clock-title clock-desc">
+<title id="clock-title">Aurora SFP loopback: clocks and resets</title><desc id="clock-desc">A 300 MHz differential board clock feeds Clocking Wizard, producing a free-running 100 MHz init clock for both Aurora cores and reset logic. A separate 156.25 MHz GT reference enters Aurora 0. Aurora 0 supplies user clock, sync clock, QPLL signals and GT reset to Aurora 1. Both channel-up signals are ANDed to enable generation; both system resets are ORed to reset the application.</desc>
+<defs><style>
+svg { font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#fff; }
+text { fill:#172a3d; font-size:17px; }
+.title { font-size:24px; font-weight:650; letter-spacing:-.02em; }
+.heading { font-size:20px; font-weight:620; }
+.small { font-size:15px; fill:#596b7d; }
+.tiny { font-size:13px; fill:#596b7d; }
+.mono { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:14px; }
+.scope { fill:#fafcfe; stroke:#b9c9d7; stroke-width:1.5; }
+.nodebox { fill:#fff; stroke:#bdcedb; stroke-width:1.5; }
+.payloadbox { fill:#f0faf7; stroke:#a0cfc0; }
+.clockbox { fill:#fff9ed; stroke:#ddc99b; }
+.controlbox { fill:#f7f2fc; stroke:#cfbfe3; }
+.statusbox { fill:#f2f6fb; stroke:#b7c8da; }
+.cagebox { fill:#eef6fb; stroke:#9dbdd2; }
+.banner { fill:#eef4f8; }
+.divider { stroke:#dbe4ec; stroke-width:1; }
+.data { fill:none; stroke:#007d73; stroke-width:3.2; stroke-linejoin:round; }
+.ready { fill:none; stroke:#007d73; stroke-width:1.7; stroke-dasharray:5 4; }
+.clock { fill:none; stroke:#a56a06; stroke-width:2.4; stroke-linejoin:round; }
+.control { fill:none; stroke:#7350b4; stroke-width:2.4; stroke-linejoin:round; }
+.status { fill:none; stroke:#61788f; stroke-width:2; stroke-linejoin:round; }
+.serial { fill:none; stroke:#176b8b; stroke-width:2.6; stroke-linejoin:round; }
+.label { font-size:14px; fill:#486174; paint-order:stroke; stroke:#fff; stroke-width:5; stroke-linejoin:round; }
+.port { font-size:13px; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; fill:#486174; }
+.selected .nodebox { stroke:#007d73; stroke-width:3; }
+a { cursor:pointer; text-decoration:none; }
+a:hover .nodebox { stroke:#4a8e9c; stroke-width:2.5; }
+a:focus-visible { outline:3px solid #168dcd; outline-offset:4px; }
+</style>
+<marker id="clock-data-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#007d73"/></marker>
+<marker id="clock-clock-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#a56a06"/></marker>
+<marker id="clock-control-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#7350b4"/></marker>
+<marker id="clock-status-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#61788f"/></marker>
+<marker id="clock-serial-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#176b8b"/></marker>
+</defs>
+<rect x="0" y="0" width="1520" height="1160" rx="9" class="" fill="#fff" stroke="none"/>
+<text x="36" y="43" class="title" >Clock, reset and common control</text>
+<text x="36" y="72" class="small" >Two board clock inputs. The 100 MHz initialization clock is independent of Aurora user_clk_out.</text>
+<rect x="344" y="130" width="1125" height="785" rx="9" class="scope" />
+<text x="360" y="153" class="tiny" >Hardware clock and reset support</text>
+<path d="M280 210 H365" class="clock" marker-end="url(#clock-clock-arrow)"/>
+<path d="M630 210 H720 V565 H790" class="clock" marker-end="url(#clock-clock-arrow)"/>
+<path d="M720 230 H790" class="clock" marker-end="url(#clock-clock-arrow)"/>
+<circle cx="720" cy="230" r="4" fill="#a56a06"/>
+<path d="M690 210 V400 H500 V435" class="clock" marker-end="url(#clock-clock-arrow)"/>
+<circle cx="690" cy="210" r="4" fill="#a56a06"/>
+<text x="649" y="188" class="label" >100 MHz</text>
+<text x="735" y="418" class="label" >init_clk</text>
+<path d="M630 290 H664 V480 H630" class="status" marker-end="url(#clock-status-arrow)"/>
+<text x="670" y="353" class="label" >locked</text>
+<path d="M280 435 H325 V290 H365" class="control" marker-end="url(#clock-control-arrow)"/>
+<path d="M325 435 V530 H365" class="control" marker-end="url(#clock-control-arrow)"/>
+<circle cx="325" cy="435" r="4" fill="#7350b4"/>
+<path d="M1215 108 V165" class="clock" marker-end="url(#clock-clock-arrow)"/>
+<text x="1240" y="138" class="label" >K28 / K29</text>
+<path d="M630 535 H750 V335 H790" class="control" marker-end="url(#clock-control-arrow)"/>
+<text x="675" y="511" class="label" >pma_init</text>
+<path d="M630 585 H770 V365 H790" class="control" marker-end="url(#clock-control-arrow)"/>
+<path d="M770 585 V630 H790" class="control" marker-end="url(#clock-control-arrow)"/>
+<circle cx="770" cy="585" r="4" fill="#7350b4"/>
+<text x="670" y="610" class="label" >reset_pb</text>
+<path d="M1090 385 V505" class="clock" marker-end="url(#clock-clock-arrow)"/>
+<text x="809" y="422" class="label" >sync / refclk / QPLL clocks</text>
+<path d="M1320 385 V505" class="control" marker-end="url(#clock-control-arrow)"/>
+<text x="1140" y="473" class="label" >GT reset + lock status</text>
+<path d="M1440 250 H1488 V845 H1440" class="clock" marker-end="url(#clock-clock-arrow)"/>
+<path d="M1488 590 H1440" class="clock" marker-end="url(#clock-clock-arrow)"/>
+<circle cx="1488" cy="590" r="4" fill="#a56a06"/>
+<text x="1508" y="548" class="tiny" transform="rotate(-90 1508 548)" text-anchor="middle">user_clk_out ≈ 161.133 MHz</text>
+<a href="#block-details" data-node="board300" aria-label="Board clock · U47"><title>Board clock · U47 — select to inspect connections</title>
+<rect x="45" y="165" width="235" height="115" rx="9" class="nodebox clockbox" />
+<text x="64" y="197" class="heading" style="font-size:19.53px">Board clock · U47</text>
+<text x="64" y="222" class="mono" style="font-size:14.00px">USER_SI570_C0</text>
+<text x="64" y="252" class="small" style="font-size:15.00px">300 MHz differential</text>
+</a>
+<a href="#block-details" data-node="wizard" aria-label="Clocking Wizard"><title>Clocking Wizard — select to inspect connections</title>
+<rect x="365" y="165" width="265" height="160" rx="9" class="nodebox clockbox" />
+<text x="384" y="197" class="heading" style="font-size:20.00px">Clocking Wizard</text>
+<text x="384" y="222" class="mono" style="font-size:14.00px">clk_wiz_0</text>
+<text x="384" y="252" class="small" style="font-size:15.00px">300 MHz in → 100 MHz out</text>
+<text x="384" y="275" class="small" style="font-size:15.00px">Outputs: clk_out1 + locked</text>
+</a>
+<a href="#block-details" data-node="boardreset" aria-label="CPU reset · SW13"><title>CPU reset · SW13 — select to inspect connections</title>
+<rect x="45" y="380" width="235" height="115" rx="9" class="nodebox controlbox" />
+<text x="64" y="412" class="heading" style="font-size:19.53px">CPU reset · SW13</text>
+<text x="64" y="437" class="mono" style="font-size:14.00px">reset · pin H11</text>
+<text x="64" y="467" class="small" style="font-size:15.00px">Active-high pushbutton</text>
+</a>
+<a href="#block-details" data-node="reset" aria-label="Startup reset logic"><title>Startup reset logic — select to inspect connections</title>
+<rect x="365" y="435" width="265" height="185" rx="9" class="nodebox controlbox" />
+<text x="384" y="467" class="heading" style="font-size:20.00px">Startup reset logic</text>
+<text x="384" y="492" class="mono" style="font-size:14.00px">reset_logic_0</text>
+<text x="384" y="522" class="small" style="font-size:15.00px">Wait for clock lock</text>
+<text x="384" y="545" class="small" style="font-size:14.43px">Release PMA after 1024 cycles</text>
+<text x="384" y="568" class="small" style="font-size:14.73px">Release logic after 1024 more</text>
+<text x="384" y="591" class="small" style="font-size:15.00px">100 MHz → 10.24 µs per wait</text>
+</a>
+<a href="#block-details" data-node="board156" aria-label="GT reference · U48"><title>GT reference · U48 — select to inspect connections</title>
+<rect x="1040" y="12" width="350" height="96" rx="9" class="nodebox clockbox" />
+<text x="1059" y="44" class="heading" style="font-size:20.00px">GT reference · U48</text>
+<text x="1059" y="69" class="mono" style="font-size:14.00px">USER_MGT_SI570 · 156.25 MHz</text>
+</a>
+<a href="#block-details" data-node="aurora0" aria-label="Aurora 0 · shared logic inside"><title>Aurora 0 · shared logic inside — select to inspect connections</title>
+<rect x="790" y="165" width="650" height="220" rx="9" class="nodebox " />
+<text x="809" y="197" class="heading" style="font-size:20.00px">Aurora 0 · shared logic inside</text>
+<text x="809" y="222" class="mono" style="font-size:14.00px">aurora_64b66b_0</text>
+<text x="809" y="252" class="small" style="font-size:15.00px">GT_DIFF_REFCLK1: separate 156.25 MHz board input</text>
+<text x="809" y="275" class="small" style="font-size:15.00px">init_clk: Clocking Wizard 100 MHz</text>
+<text x="809" y="298" class="small" style="font-size:15.00px">pma_init + reset_pb: startup controller</text>
+<text x="809" y="321" class="small" style="font-size:15.00px">Exports reference / QPLL / user &amp; sync clocks / GT reset</text>
+</a>
+<a href="#block-details" data-node="aurora1" aria-label="Aurora 1 · shared logic outside"><title>Aurora 1 · shared logic outside — select to inspect connections</title>
+<rect x="790" y="505" width="650" height="180" rx="9" class="nodebox " />
+<text x="809" y="537" class="heading" style="font-size:20.00px">Aurora 1 · shared logic outside</text>
+<text x="809" y="562" class="mono" style="font-size:14.00px">aurora_64b66b_1</text>
+<text x="809" y="592" class="small" style="font-size:15.00px">init_clk: same free-running 100 MHz clock</text>
+<text x="809" y="615" class="small" style="font-size:15.00px">pma_init: Aurora 0 gt_reset_out; reset_pb: controller</text>
+<text x="809" y="638" class="small" style="font-size:15.00px">Clocks and shared-QPLL status supplied by Aurora 0</text>
+</a>
+<a href="#block-details" data-node="appclock" aria-label="Application clock domain"><title>Application clock domain — select to inspect connections</title>
+<rect x="790" y="780" width="650" height="130" rx="9" class="nodebox clockbox" />
+<text x="809" y="812" class="heading" style="font-size:20.00px">Application clock domain</text>
+<text x="809" y="837" class="mono" style="font-size:14.00px">Aurora 0 user_clk_out</text>
+<text x="809" y="867" class="small" style="font-size:15.00px">Generator · FIFO · checker · idle TX source · ILA</text>
+<text x="809" y="890" class="small" style="font-size:15.00px">Aurora 1 user_clk uses this same clock</text>
+</a>
+<text x="45" y="673" class="small" >Reference clocks enter on P/N pairs.</text>
+<text x="45" y="699" class="small" >P and N are the two sides of one clock.</text>
+<text x="45" y="746" class="small" >Package pins:</text>
+<text x="45" y="774" class="mono" >300 MHz: AM10 / AN10</text>
+<text x="45" y="800" class="mono" >156.25 MHz: K28 / K29</text>
+<text x="45" y="826" class="mono" >CPU_RESET: H11</text>
+<text x="45" y="877" class="small" >Keep init_clk running during operation.</text>
+<text x="45" y="944" class="heading" >Control and status connections · named nets</text>
+<a href="#block-details" data-node="control" aria-label="Fixed core control"><title>Fixed core control — select to inspect connections</title>
+<rect x="45" y="970" width="430" height="158" rx="9" class="nodebox controlbox" />
+<text x="64" y="1002" class="heading" style="font-size:20.00px">Fixed core control</text>
+<text x="64" y="1027" class="mono" style="font-size:14.00px">core_control_logic_0</text>
+<text x="64" y="1057" class="small" style="font-size:15.00px">loopback = 000 · power_down = 0</text>
+<text x="64" y="1080" class="small" style="font-size:15.00px">gt_rxcdrovrden_in = 0</text>
+<text x="64" y="1103" class="small" style="font-size:15.00px">Drives both Aurora cores</text>
+</a>
+<a href="#block-details" data-node="enable" aria-label="AND: both channels ready"><title>AND: both channels ready — select to inspect connections</title>
+<rect x="525" y="970" width="430" height="158" rx="9" class="nodebox statusbox" />
+<text x="544" y="1002" class="heading" style="font-size:20.00px">AND: both channels ready</text>
+<text x="544" y="1027" class="mono" style="font-size:14.00px">util_vector_logic_0</text>
+<text x="544" y="1057" class="small" style="font-size:15.00px">Aurora 0 channel_up AND Aurora 1 channel_up</text>
+<text x="544" y="1080" class="small" style="font-size:15.00px">→ frame_generator_0 / CHANNEL_UP</text>
+</a>
+<a href="#block-details" data-node="appreset" aria-label="OR: common application reset"><title>OR: common application reset — select to inspect connections</title>
+<rect x="1005" y="970" width="435" height="158" rx="9" class="nodebox controlbox" />
+<text x="1024" y="1002" class="heading" style="font-size:20.00px">OR: common application reset</text>
+<text x="1024" y="1027" class="mono" style="font-size:14.00px">util_vector_logic_1</text>
+<text x="1024" y="1057" class="small" style="font-size:15.00px">Aurora 0 sys_reset_out OR Aurora 1 sys_reset_out</text>
+<text x="1024" y="1080" class="small" style="font-size:15.00px">→ generator / FIFO / checker RESET; ILA probe2</text>
+</a>
+</svg></div><p class="diagram-caption">Gold traces are clocks; purple traces are reset/control. The shared-support arrows group several real connections; select either Aurora block to read the individual ports. Bottom cards describe named-net connections.</p></div><div id="panel-simulation" role="tabpanel" aria-labelledby="tab-simulation" tabindex="0" hidden><div class="diagram-scroll"><svg xmlns="http://www.w3.org/2000/svg" id="diagram-simulation" class="diagram-svg" width="1520" height="950" viewBox="0 0 1520 950" role="img" aria-labelledby="simulation-title simulation-desc">
+<title id="simulation-title">Aurora SFP loopback: simulation harness</title><desc id="simulation-desc">The testbench instantiates the hardware wrapper once. Both Aurora cores are already inside it. Testbench code provides two board clock pairs and a reset pulse, cross-connects both serial directions, and checks channel-up, checker error and received-frame count at one millisecond.</desc>
+<defs><style>
+svg { font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#fff; }
+text { fill:#172a3d; font-size:17px; }
+.title { font-size:24px; font-weight:650; letter-spacing:-.02em; }
+.heading { font-size:20px; font-weight:620; }
+.small { font-size:15px; fill:#596b7d; }
+.tiny { font-size:13px; fill:#596b7d; }
+.mono { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:14px; }
+.scope { fill:#fafcfe; stroke:#b9c9d7; stroke-width:1.5; }
+.nodebox { fill:#fff; stroke:#bdcedb; stroke-width:1.5; }
+.payloadbox { fill:#f0faf7; stroke:#a0cfc0; }
+.clockbox { fill:#fff9ed; stroke:#ddc99b; }
+.controlbox { fill:#f7f2fc; stroke:#cfbfe3; }
+.statusbox { fill:#f2f6fb; stroke:#b7c8da; }
+.cagebox { fill:#eef6fb; stroke:#9dbdd2; }
+.banner { fill:#eef4f8; }
+.divider { stroke:#dbe4ec; stroke-width:1; }
+.data { fill:none; stroke:#007d73; stroke-width:3.2; stroke-linejoin:round; }
+.ready { fill:none; stroke:#007d73; stroke-width:1.7; stroke-dasharray:5 4; }
+.clock { fill:none; stroke:#a56a06; stroke-width:2.4; stroke-linejoin:round; }
+.control { fill:none; stroke:#7350b4; stroke-width:2.4; stroke-linejoin:round; }
+.status { fill:none; stroke:#61788f; stroke-width:2; stroke-linejoin:round; }
+.serial { fill:none; stroke:#176b8b; stroke-width:2.6; stroke-linejoin:round; }
+.label { font-size:14px; fill:#486174; paint-order:stroke; stroke:#fff; stroke-width:5; stroke-linejoin:round; }
+.port { font-size:13px; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; fill:#486174; }
+.selected .nodebox { stroke:#007d73; stroke-width:3; }
+a { cursor:pointer; text-decoration:none; }
+a:hover .nodebox { stroke:#4a8e9c; stroke-width:2.5; }
+a:focus-visible { outline:3px solid #168dcd; outline-offset:4px; }
+</style>
+<marker id="simulation-data-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#007d73"/></marker>
+<marker id="simulation-clock-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#a56a06"/></marker>
+<marker id="simulation-control-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#7350b4"/></marker>
+<marker id="simulation-status-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#61788f"/></marker>
+<marker id="simulation-serial-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#176b8b"/></marker>
+</defs>
+<rect x="0" y="0" width="1520" height="950" rx="9" class="" fill="#fff" stroke="none"/>
+<text x="36" y="43" class="title" >Simulation harness</text>
+<rect x="32" y="70" width="1460" height="842" rx="9" class="scope" />
+<text x="54" y="103" class="mono" >Simulation top: aurora_system_tb</text>
+<rect x="545" y="140" width="790" height="570" rx="9" class="nodebox" />
+<text x="568" y="175" class="heading" >One wrapper instance: dut : aurora_system_wrapper</text>
+<text x="568" y="200" class="tiny" >Contains the same twelve-block hardware design, including both Aurora cores.</text>
+<path d="M430 215 H545" class="clock" marker-end="url(#simulation-clock-arrow)"/>
+<text x="440" y="202" class="label" >300 MHz</text>
+<path d="M430 295 H545" class="clock" marker-end="url(#simulation-clock-arrow)"/>
+<text x="440" y="283" class="label" >156.25 MHz</text>
+<path d="M430 475 H545" class="control" marker-end="url(#simulation-control-arrow)"/>
+<text x="441" y="463" class="label" >reset</text>
+<path d="M785 285 H845" class="data" marker-end="url(#simulation-data-arrow)"/>
+<path d="M815 285 V438 H785" class="data" marker-end="url(#simulation-data-arrow)"/>
+<circle cx="815" cy="285" r="4" fill="#007d73"/>
+<path d="M680 495 V540" class="data" marker-end="url(#simulation-data-arrow)"/>
+<path d="M845 565 H815 V590 H785" class="data" marker-end="url(#simulation-data-arrow)"/>
+<path d="M1285 285 H1420 V565 H1285" class="data" marker-end="url(#simulation-data-arrow)"/>
+<path d="M1285 500 H1380 V350 H1285" class="serial" marker-end="url(#simulation-serial-arrow)"/>
+<text x="1445" y="450" class="tiny" transform="rotate(-90 1445 450)" text-anchor="middle">Testbench cable model · P→P and N→N</text>
+<path d="M940 710 V760" class="status" marker-end="url(#simulation-status-arrow)"/>
+<text x="966" y="741" class="label" >Channel status · checker error · RX frame count</text>
+<path d="M545 810 H430" class="status" marker-end="url(#simulation-status-arrow)"/>
+<a href="#block-details" data-node="tbclocks" aria-label="Clock generators"><title>Clock generators — select to inspect connections</title>
+<rect x="65" y="145" width="365" height="205" rx="9" class="nodebox clockbox" />
+<text x="84" y="177" class="heading" style="font-size:20.00px">Clock generators</text>
+<text x="84" y="202" class="mono" style="font-size:14.00px">always statements</text>
+<text x="84" y="232" class="small" style="font-size:14.92px">clk_300mhz: toggle every 1.666666667 ns</text>
+<text x="84" y="255" class="small" style="font-size:15.00px">clk_156p25mhz: toggle every 3.2 ns</text>
+<text x="84" y="278" class="small" style="font-size:15.00px">N input = complement of P input</text>
+<text x="84" y="301" class="small" style="font-size:15.00px">Two differential clock pairs</text>
+</a>
+<a href="#block-details" data-node="tbreset" aria-label="Reset stimulus"><title>Reset stimulus — select to inspect connections</title>
+<rect x="65" y="420" width="365" height="125" rx="9" class="nodebox controlbox" />
+<text x="84" y="452" class="heading" style="font-size:20.00px">Reset stimulus</text>
+<text x="84" y="477" class="mono" style="font-size:14.00px">initial block</text>
+<text x="84" y="507" class="small" style="font-size:15.00px">reset starts at 1; released after 100 ns</text>
+</a>
+<a href="#block-details" data-node="generator" aria-label="Generator"><title>Generator — select to inspect connections</title>
+<rect x="575" y="235" width="210" height="100" rx="9" class="nodebox payloadbox" />
+<text x="594" y="267" class="heading" style="font-size:20.00px">Generator</text>
+<text x="594" y="292" class="mono" style="font-size:14.00px">frame_generator_0</text>
+</a>
+<a href="#block-details" data-node="fifo" aria-label="Reference FIFO"><title>Reference FIFO — select to inspect connections</title>
+<rect x="575" y="395" width="210" height="100" rx="9" class="nodebox payloadbox" />
+<text x="594" y="427" class="heading" style="font-size:19.40px">Reference FIFO</text>
+<text x="594" y="452" class="mono" style="font-size:12.13px">golden_reference_fifo_0</text>
+</a>
+<a href="#block-details" data-node="checker" aria-label="Checker"><title>Checker — select to inspect connections</title>
+<rect x="575" y="540" width="210" height="100" rx="9" class="nodebox payloadbox" />
+<text x="594" y="572" class="heading" style="font-size:20.00px">Checker</text>
+<text x="594" y="597" class="mono" style="font-size:14.00px">frame_checker_0</text>
+</a>
+<a href="#block-details" data-node="aurora0" aria-label="Aurora 0"><title>Aurora 0 — select to inspect connections</title>
+<rect x="845" y="235" width="440" height="155" rx="9" class="nodebox " />
+<text x="864" y="267" class="heading" style="font-size:20.00px">Aurora 0</text>
+<text x="864" y="292" class="mono" style="font-size:14.00px">aurora_64b66b_0</text>
+<text x="864" y="322" class="small" style="font-size:15.00px">TX → sfp0_tx</text>
+<text x="864" y="345" class="small" style="font-size:15.00px">RX ← sfp0_rx</text>
+</a>
+<a href="#block-details" data-node="aurora1" aria-label="Aurora 1"><title>Aurora 1 — select to inspect connections</title>
+<rect x="845" y="450" width="440" height="155" rx="9" class="nodebox " />
+<text x="864" y="482" class="heading" style="font-size:20.00px">Aurora 1</text>
+<text x="864" y="507" class="mono" style="font-size:14.00px">aurora_64b66b_1</text>
+<text x="864" y="537" class="small" style="font-size:15.00px">TX → sfp1_tx · application TX idle</text>
+<text x="864" y="560" class="small" style="font-size:15.00px">RX ← sfp1_rx → frame checker</text>
+</a>
+<a href="#block-details" data-node="tbresult" aria-label="Result at 1 ms"><title>Result at 1 ms — select to inspect connections</title>
+<rect x="65" y="655" width="365" height="200" rx="9" class="nodebox statusbox" />
+<text x="84" y="687" class="heading" style="font-size:20.00px">Result at 1 ms</text>
+<text x="84" y="712" class="mono" style="font-size:14.00px">initial block</text>
+<text x="84" y="742" class="small" style="font-size:15.00px">Both channel_up signals must be 1</text>
+<text x="84" y="765" class="small" style="font-size:15.00px">Checker ERROR must be 0</text>
+<text x="84" y="788" class="small" style="font-size:14.98px">RX_FRAME_COUNT must be greater than 0</text>
+<text x="84" y="811" class="small" style="font-size:15.00px">Print TEST_PASS / TEST_FAIL, then $stop</text>
+</a>
+<a href="#block-details" data-node="tbmonitor" aria-label="Observe the hardware status"><title>Observe the hardware status — select to inspect connections</title>
+<rect x="545" y="760" width="790" height="100" rx="9" class="nodebox statusbox" />
+<text x="564" y="792" class="heading" style="font-size:20.00px">Observe the hardware status</text>
+<text x="564" y="817" class="mono" style="font-size:14.00px">channel_up_0 · channel_up_1 · checker_error · rx_frames</text>
+</a>
+<text x="568" y="688" class="tiny" >Clocking Wizard, reset controller and ILA remain inside the hardware wrapper.</text>
+<text x="54" y="889" class="small" >Only clock/reset stimulus, serial cable assignments and the result check belong to the testbench.</text>
+</svg></div><p class="diagram-caption">One hardware wrapper is instantiated. The serial return paths are testbench assignments outside the DUT; on the board, the duplex cable supplies those connections.</p></div>
+<section class="detail" id="block-details" aria-label="Selected block details">
+ <div aria-live="polite" aria-atomic="true"><div class="detail-kicker" id="detail-kind"></div><h2 id="detail-title"></h2><p id="detail-description"></p><div class="source"><code id="detail-module"></code><br><a id="detail-source" href="Sources/BD/aurora_system.tcl">View source</a></div></div>
+ <div class="table-wrap"><table aria-label="Selected block connections"><thead><tr><th>Signal / setting</th><th>Connection or purpose</th></tr></thead><tbody id="detail-ports"></tbody></table></div>
+</section></section>
+<section class="notes" aria-label="Design notes"><div class="note"><strong>Why RX is called an AXI master</strong>Aurora supplies received data on USER_DATA_M_AXIS_RX. Master describes its role on the local AXI stream; RX describes the direction on the serial link.</div><div class="note"><strong>Hardware and simulation share the same design</strong>The testbench supplies two clock pairs, a reset pulse and a cable model. Clocking Wizard, startup reset logic, both Aurora cores and ILA remain inside the hardware wrapper.</div></section>
+<footer><span>Connection diagram · twelve-block Aurora SFP design</span><div class="footer-links"><a href="README.md">Project README</a><a href="docs/aurora_connections_readme.md">Pin & connection guide</a><a href="docs/TCL_COMMANDS.md">Tcl commands</a><a href="docs/images/aurora_block_diagram.svg">Open data-path SVG</a></div></footer>
+</main><script>
+(() => {
+"use strict";
+const blocks = {"overview": {"kind": "Hardware design", "title": "Two Aurora endpoints in one FPGA", "module": "aurora_system_wrapper → aurora_system", "source": "Sources/BD/aurora_system.tcl", "description": "Aurora 0 sends generated frames through SFP0 and the external cable to Aurora 1 on SFP1. A local FIFO stores accepted TX words so the checker can compare the actual received stream. Both cores are part of the hardware design.", "ports": [["Payload path", "Generator → Aurora 0 TX → SFP0 → cable → SFP1 → Aurora 1 RX → checker."], ["Reference path", "The passive FIFO monitors the same TX stream and records each TVALID && TREADY transfer."], ["Reverse direction", "Aurora 1 TX application is idle; Aurora link initialization and idle traffic still run toward Aurora 0."], ["loopback[2:0]", "000: normal external serial operation; the return path is the physical cable."]]}, "generator": {"kind": "Application source", "title": "Frame generator", "module": "frame_generator_0 : frame_generator", "source": "Sources/RTL/frame_generator.v", "description": "Produces a continuous 64-bit incrementing counter, grouped into frames of 16 accepted words. It holds a stalled transfer stable. Both channels must be up before new traffic is offered.", "ports": [["GENERATED_DATA_M_AXIS", "Drives Aurora 0 USER_DATA_S_AXIS_TX and the FIFO TX_MONITOR."], ["m_axis_tready", "Input driven by Aurora 0; the generator advances only on TVALID && TREADY."], ["TKEEP / TLAST", "TKEEP = FF; TLAST marks each sixteenth word."], ["USER_CLK / RESET", "Aurora 0 user_clk_out / OR of both sys_reset_out signals."], ["CHANNEL_UP", "AND of Aurora 0 channel_up and Aurora 1 channel_up."]]}, "fifo": {"kind": "Passive TX reference store", "title": "Golden-reference FIFO", "module": "golden_reference_fifo_0 : golden_reference_fifo", "source": "Sources/RTL/golden_reference_fifo.v", "description": "Stores the actual transmitted DATA, KEEP and LAST fields. It never drives Aurora TX ready. The checker reads the reference head when received data arrives. Overflow latches an error instead of backpressuring the transmitter.", "ports": [["TX_MONITOR", "All five TX fields are inputs, including TREADY from Aurora 0."], ["REF_PORT", "Master reference stream to checker REF_PORT; REF_TVALID means the FIFO is nonempty."], ["READ_EN / TREADY", "Input from checker REF_TREADY; pops a valid reference word."], ["OVERFLOW_ERROR", "Drives checker FIFO_OVERFLOW_ERROR and ILA probe6."], ["DEPTH / clock", "256 words / Aurora 0 user_clk_out."]]}, "checker": {"kind": "Application sink", "title": "Frame checker", "module": "frame_checker_0 : frame_checker", "source": "Sources/RTL/frame_checker.v", "description": "Compares every valid word from Aurora 1 against the FIFO reference, including the keep mask and frame boundary. Only data bytes selected by TKEEP are compared. Aurora RX has no TREADY, so received words are handled immediately.", "ports": [["RX", "Connected to Aurora 1 USER_DATA_M_AXIS_RX, not Aurora 0."], ["REF_PORT", "Receives expected DATA / KEEP / LAST / VALID from the FIFO; returns TREADY."], ["ERROR / ERROR_COUNT", "Sticky error flag / saturating count of bad RX words."], ["RX_FRAME_COUNT", "Saturating count of received TLAST words; frames may include errors."], ["USER_CLK / RESET", "Aurora 0 user_clk_out / common application reset."]]}, "idle": {"kind": "Constant AXI source", "title": "Aurora 1 idle TX source", "module": "aurora_tx_idle_0 : aurora_tx_idle", "source": "Sources/RTL/aurora1_tx_idle.v", "description": "Holds Aurora 1 application TX valid low. The Aurora IP still generates protocol initialization and idle traffic on the serial transmitter. This design has one payload generator and one payload checker.", "ports": [["M_AXIS", "Connects to Aurora 1 USER_DATA_S_AXIS_TX."], ["TVALID / DATA / KEEP / LAST", "All held at zero; no application word is offered."], ["TREADY", "Input from Aurora 1; no transfer is requested."], ["USER_CLK", "Aurora 0 user_clk_out; associates the AXI interface with the correct clock."]]}, "aurora0": {"kind": "Aurora IP", "title": "Aurora 0: owner of shared logic", "module": "aurora_64b66b_0 : Aurora 64B/66B 13.0", "source": "Sources/BD/aurora_system.tcl", "description": "One GTY lane at 10.3125 Gb/s on SFP0 / X0Y0. Shared logic is inside this IP: GT reference input buffer, common QPLL resources, user/sync clock generation and support reset. It supplies those support signals to Aurora 1.", "ports": [["USER_DATA_S_AXIS_TX", "AXI slave input from the generator; supplies TX TREADY."], ["USER_DATA_M_AXIS_RX", "AXI master output; unused by the checker in this design."], ["GT_SERIAL_TX / RX", "External sfp0_tx / sfp0_rx, connected through the SFP0 cage."], ["GT_DIFF_REFCLK1", "156.25 MHz differential clock on K28 / K29."], ["init_clk / pma_init / reset_pb", "100 MHz from Clocking Wizard / controller pma_init / controller reset_pb."], ["Support outputs", "user_clk_out, sync_clk_out, gt_refclk1_out, QPLL clocks/status, mmcm_not_locked_out and gt_reset_out."]]}, "aurora1": {"kind": "Aurora IP", "title": "Aurora 1: user of shared logic", "module": "aurora_64b66b_1 : Aurora 64B/66B 13.0", "source": "Sources/BD/aurora_system.tcl", "description": "One GTY lane at 10.3125 Gb/s on SFP1 / X0Y1. Shared logic is outside this IP. It uses the same application clock and QPLL/common support from Aurora 0, because both channels occupy the same GTY quad.", "ports": [["USER_DATA_M_AXIS_RX", "AXI master output to checker RX. RX describes the serial link direction; master means Aurora supplies the local stream."], ["USER_DATA_S_AXIS_TX", "AXI slave input from the idle source; application TVALID is zero."], ["GT_SERIAL_TX / RX", "External sfp1_tx / sfp1_rx, connected through the SFP1 cage."], ["user_clk / sync_clk / refclk1_in", "Aurora 0 user_clk_out / sync_clk_out / gt_refclk1_out."], ["QPLL / lock status", "QPLL clocks, QPLL lock/refclk-lost and MMCM-not-locked come from Aurora 0."], ["init_clk / pma_init / reset_pb", "Clocking Wizard 100 MHz / Aurora 0 gt_reset_out / controller reset_pb."]]}, "sfp0": {"kind": "Board connector", "title": "SFP0: GTY X0Y0", "module": "sfp0_tx / sfp0_rx", "source": "Sources/Constraints/zcu670_pins.xdc", "description": "The board PCB already routes this SFP cage to its GTY channel. XDC assigns the wrapper ports to those package pins; the external cable connects each transmitter to the opposite receiver.", "ports": [["TXP / TXN", "N30 / N31"], ["RXP / RXN", "P33 / P34"], ["GTY quad", "Quad X0Y0 / bank 127; SFP0 uses channel 0 and SFP1 channel 1."], ["Cable", "SFP0 TX → SFP1 RX; SFP1 TX → SFP0 RX. Both differential polarities are preserved."], ["TX enable", "J39 ON holds this cage TX_DISABLE low. Check the selected module/cable rate and control settings."]]}, "sfp1": {"kind": "Board connector", "title": "SFP1: GTY X0Y1", "module": "sfp1_tx / sfp1_rx", "source": "Sources/Constraints/zcu670_pins.xdc", "description": "The board PCB already routes this SFP cage to its GTY channel. XDC assigns the wrapper ports to those package pins; the external cable connects each transmitter to the opposite receiver.", "ports": [["TXP / TXN", "L30 / L31"], ["RXP / RXN", "M33 / M34"], ["GTY quad", "Quad X0Y0 / bank 127; SFP0 uses channel 0 and SFP1 channel 1."], ["Cable", "SFP0 TX → SFP1 RX; SFP1 TX → SFP0 RX. Both differential polarities are preserved."], ["TX enable", "J44 ON holds this cage TX_DISABLE low. Check the selected module/cable rate and control settings."]]}, "ila": {"kind": "Hardware observation", "title": "ILA: seven status probes", "module": "ila_0 : ILA 6.2", "source": "Sources/BD/aurora_system.tcl", "description": "A hardware ILA samples the application domain using Aurora 0 user_clk_out. Depth is 1024 samples. Its inputs branch from functional nets. Hardware capture still requires a running sampling clock and working debug-hub clock.", "ports": [["probe0 / probe1", "Aurora 0 channel_up / Aurora 1 channel_up, one bit each."], ["probe2", "Common application reset, one bit."], ["probe3 / probe4", "Checker ERROR, one bit / ERROR_COUNT, 32 bits."], ["probe5 / probe6", "Checker RX_FRAME_COUNT, 32 bits / FIFO OVERFLOW_ERROR, one bit."], ["Expected running state", "Both channels up; reset low; error/overflow clear; frame count increasing."]]}, "board300": {"kind": "Board clock input", "title": "300 MHz system clock", "module": "U47 USER_SI570_C0 → default_sysclk_c0_300mhz", "source": "Sources/BD/aurora_system.tcl", "description": "A board oscillator supplies the differential input to Clocking Wizard. The recreated board-aware Clocking Wizard generates the pin and clock constraints for this interface.", "ports": [["P / N pins", "AM10 / AN10, DIFF_SSTL12."], ["Destination", "clk_wiz_0 / CLK_IN1_D."], ["100 MHz init clock", "Generated from this independent source, not from an Aurora user clock."], ["Constraints", "Generated Clocking Wizard board XDC supplies pin associations; its IP XDC defines input clock timing."]]}, "board156": {"kind": "Board GT reference", "title": "156.25 MHz GT reference", "module": "U48 USER_MGT_SI570 → GT_DIFF_REFCLK1_0", "source": "Sources/Constraints/zcu670_pins.xdc", "description": "This separate board oscillator enters Aurora 0 through its differential GT reference-clock port. The GT input buffer and shared QPLL support are inside Aurora 0.", "ports": [["P / N pins", "K28 / K29."], ["GT reference selection", "MGTREFCLK1 of quad X0Y0."], ["Timing constraint", "create_clock -name gt_refclk_156p25 -period 6.400 on the P port."], ["Shared reference", "Aurora 0 gt_refclk1_out → Aurora 1 refclk1_in."], ["Clock versus constraint", "The oscillator generates the physical clock; create_clock defines its timing model."]]}, "wizard": {"kind": "Clocking IP", "title": "Clocking Wizard: 300 MHz to 100 MHz", "module": "clk_wiz_0 : Clocking Wizard 6.0", "source": "Sources/BD/aurora_system.tcl", "description": "Creates the continuously running initialization clock from the board system clock. Its lock indication also controls the startup reset sequencer.", "ports": [["CLK_IN1_D", "External differential default_sysclk_c0_300mhz input."], ["clk_out1", "100 MHz → both Aurora init_clk inputs and reset_logic_0/init_clk."], ["reset", "External CPU_RESET button, active high."], ["locked", "Drives reset_logic_0/locked."], ["Board flow", "Board interfaces capture system clock and reset pin assignments."]]}, "boardreset": {"kind": "Board control", "title": "CPU_RESET pushbutton", "module": "SW13 → pin H11 → reset", "source": "Sources/BD/aurora_system.tcl", "description": "The active-high board button resets Clocking Wizard and requests a restart of the reset controller. The H11 mapping comes from ZCU670 board files and is applied by generated Clocking Wizard constraints.", "ports": [["reset", "Drives clk_wiz_0/reset and reset_logic_0/reset_request."], ["H11", "CPU_RESET, LVCMOS18."], ["Clock loss", "The controller also holds reset while locked is low."], ["Simulation equivalent", "The testbench drives this same wrapper reset input high initially and low after 100 ns."]]}, "reset": {"kind": "Custom startup controller", "title": "Startup reset logic", "module": "reset_logic_0 : reset_logic", "source": "Sources/RTL/reset_logic.v", "description": "Asserts reset immediately on the board request or loss of clock lock. A two-register synchronizer releases the internal reset on init_clk. A counter then separates GT reset release from Aurora logic reset release.", "ports": [["init_clk / locked", "100 MHz and lock status from Clocking Wizard."], ["reset_request", "External active-high reset button input."], ["pma_init", "High initially; released after 1024 counting cycles; drives Aurora 0 pma_init."], ["reset_pb", "Released after another 1024 cycles; drives both Aurora reset_pb inputs."], ["Aurora 1 PMA reset", "Comes from Aurora 0 gt_reset_out, not directly from this controller."], ["Verification scope", "Startup has been simulated. Board reset, reconnection and running-link recovery remain to be verified."]]}, "appclock": {"kind": "Application clock domain", "title": "Shared application clock", "module": "Aurora 0 user_clk_out", "source": "Sources/BD/aurora_system.tcl", "description": "The generator, reference FIFO, checker, idle TX source and ILA share Aurora 0 user_clk_out. Aurora 1 uses the same net as user_clk. This domain is separate from the 100 MHz initialization clock.", "ports": [["Frequency", "Approximately 161.133 MHz for the configured lane rate and data width."], ["Clock source", "Generated by Aurora 0 support from the GT clock path."], ["TX / RX AXI ports", "Parallel interfaces are sampled on this user clock."], ["GT reset", "The user clock can stop during GT reset; init_clk remains independent."]]}, "control": {"kind": "Fixed controls", "title": "Core control constants", "module": "core_control_logic_0 : core_control_logic", "source": "Sources/RTL/core_control_logic.v", "description": "Three simple assignments select normal serial operation on both Aurora cores. The connections are scalar because Aurora 1 also needs a live MMCM-not-locked status input.", "ports": [["loopback[2:0]", "3'b000 → both Aurora loopback inputs."], ["power_down", "1'b0 → both power_down inputs."], ["gt_rxcdrovrden_in", "1'b0 → both CDR override inputs."], ["mmcm_not_locked", "Aurora 1 receives Aurora 0 mmcm_not_locked_out; it is not a fourth constant."]]}, "enable": {"kind": "Channel-ready gate", "title": "AND: generator enable", "module": "util_vector_logic_0 : util_vector_logic", "source": "Sources/BD/aurora_system.tcl", "description": "Both Aurora endpoints must report channel_up before the generator offers new traffic.", "ports": [["Op1", "Aurora 1 channel_up."], ["Op2", "Aurora 0 channel_up."], ["Operation / width", "AND / one bit."], ["Res", "frame_generator_0/CHANNEL_UP."]]}, "appreset": {"kind": "Application reset gate", "title": "OR: common reset", "module": "util_vector_logic_1 : util_vector_logic", "source": "Sources/BD/aurora_system.tcl", "description": "Resetting either Aurora endpoint clears the local payload generator, FIFO reference and checker together. This reset is not fed back into the Aurora reset_pb inputs.", "ports": [["Op1 / Op2", "Aurora 1 sys_reset_out / Aurora 0 sys_reset_out."], ["Operation / width", "OR / one bit."], ["Res", "Generator, FIFO and checker RESET, plus ILA probe2."], ["Clock domain", "Both system-reset sources and application logic use the shared user clock."]]}, "simulation": {"kind": "System testbench", "title": "One wrapper, two hardware cores", "module": "aurora_system_tb → dut : aurora_system_wrapper", "source": "Sources/Simulation/aurora_system_tb.v", "description": "The testbench instantiates the hardware wrapper once. Both Aurora cores and application logic are already inside it. The testbench supplies board-like inputs, a serial cable model and result checking.", "ports": [["Clock stimulus", "Two differential input pairs: 300 MHz and 156.25 MHz."], ["Reset stimulus", "Active high initially; released at 100 ns."], ["Serial cable model", "sfp0_tx → sfp1_rx; sfp1_tx → sfp0_rx, P to P and N to N."], ["Result check", "At 1 ms, require both channels up, ERROR = 0 and RX_FRAME_COUNT > 0; print result and pause."]]}, "tbclocks": {"kind": "Simulation stimulus", "title": "Testbench clock generators", "module": "always statements", "source": "Sources/Simulation/aurora_system_tb.v", "description": "Two clock registers generate the two board input frequencies. Complementary expressions provide the N inputs. The hardware Clocking Wizard still creates the initialization clock inside the DUT.", "ports": [["clk_300mhz", "Toggle every 1.666666667 ns; drives default_sysclk_c0_300mhz_clk_p."], ["clk_156p25mhz", "Toggle every 3.2 ns; drives GT_DIFF_REFCLK1_0_clk_p."], ["N ports", "Driven by the complements of their corresponding P clocks."], ["init_clk", "Not generated directly by the testbench; comes from clk_wiz_0 inside the wrapper."]]}, "tbreset": {"kind": "Simulation stimulus", "title": "Testbench reset pulse", "module": "initial block", "source": "Sources/Simulation/aurora_system_tb.v", "description": "Models assertion and release of the board reset input. The hardware startup controller remains responsible for pma_init and reset_pb sequencing.", "ports": [["Initial value", "reset = 1."], ["After 100 ns", "reset = 0."], ["Destination", "Wrapper reset input → Clocking Wizard reset and startup-controller reset_request."]]}, "tbmonitor": {"kind": "Simulation observation", "title": "Status aliases", "module": "wire declarations in aurora_system_tb", "source": "Sources/Simulation/aurora_system_tb.v", "description": "These testbench aliases make selected internal hardware status signals easy to add to the waveform and use in the result check.", "ports": [["channel_up_0 / channel_up_1", "The two Aurora cores inside dut.aurora_system_i."], ["checker_error", "frame_checker_0/ERROR."], ["rx_frames", "frame_checker_0/RX_FRAME_COUNT, 32 bits."]]}, "tbresult": {"kind": "Simulation result", "title": "Pass/fail check at 1 ms", "module": "initial block", "source": "Sources/Simulation/aurora_system_tb.v", "description": "The result check requires active channels, a clear sticky checker error, and received traffic. It pauses after reporting the result; no testbench logic is synthesized into the FPGA.", "ports": [["Pass condition", "channel_up_0 === 1, channel_up_1 === 1, checker_error === 0, rx_frames > 0."], ["Success output", "TEST_PASS: received <count> frames."], ["Failure output", "TEST_FAIL with channel states, frame count and error flag."], ["Simulation control", "$stop at 1 ms. Restart before repeating the test."]]}};
+const views = ["data", "clock", "simulation"];
+let activeView = "data";
+function selectBlock(key) {
+ const block = blocks[key]; if (!block) return;
+ document.querySelectorAll("[data-node]").forEach(node => {
+  const selected = node.dataset.node === key;
+  node.classList.toggle("selected", selected);
+  if (selected) node.setAttribute("aria-current", "true"); else node.removeAttribute("aria-current");
+ });
+ document.getElementById("detail-kind").textContent = block.kind;
+ document.getElementById("detail-title").textContent = block.title;
+ document.getElementById("detail-description").textContent = block.description;
+ document.getElementById("detail-module").textContent = block.module;
+ const source = document.getElementById("detail-source");
+ source.href = block.source; source.textContent = "Source: " + block.source;
+ const body = document.getElementById("detail-ports"); body.replaceChildren();
+ block.ports.forEach(([signal, purpose]) => {
+  const row = document.createElement("tr"), left = document.createElement("td"), right = document.createElement("td"), code = document.createElement("code");
+  code.textContent = signal; left.appendChild(code); right.textContent = purpose;
+  row.append(left, right); body.appendChild(row);
+ });
+}
+function setView(view) {
+ if (!views.includes(view)) return;
+ activeView = view;
+ views.forEach(key => {
+  document.getElementById("panel-" + key).hidden = key !== view;
+  const tab = document.getElementById("tab-" + key);
+  tab.setAttribute("aria-selected", String(key === view)); tab.tabIndex = key === view ? 0 : -1;
+ });
+ selectBlock({data:"overview", clock:"wizard", simulation:"simulation"}[view]);
+}
+document.querySelectorAll("[data-node]").forEach(node => node.addEventListener("click", event => {
+ event.preventDefault(); selectBlock(node.dataset.node);
+}));
+document.querySelectorAll("[data-view]").forEach(button => {
+ button.addEventListener("click", () => setView(button.dataset.view));
+ button.addEventListener("keydown", event => {
+  let next;
+  if (event.key === "ArrowRight") next = (views.indexOf(activeView) + 1) % views.length;
+  else if (event.key === "ArrowLeft") next = (views.indexOf(activeView) + views.length - 1) % views.length;
+  else if (event.key === "Home") next = 0;
+  else if (event.key === "End") next = views.length - 1;
+  else return;
+  event.preventDefault(); setView(views[next]); document.getElementById("tab-" + activeView).focus();
+ });
+});
+document.getElementById("export-svg").addEventListener("click", () => {
+ const svg = document.getElementById("diagram-" + activeView).cloneNode(true);
+ svg.querySelectorAll(".selected").forEach(node => node.classList.remove("selected"));
+ const blob = new Blob([new XMLSerializer().serializeToString(svg)], {type:"image/svg+xml;charset=utf-8"});
+ const url = URL.createObjectURL(blob), link = document.createElement("a");
+ link.href = url; link.download = "aurora_" + activeView + ".svg"; document.body.appendChild(link); link.click(); link.remove();
+ setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+const requestedView = new URLSearchParams(location.search).get("view");
+setView(views.includes(requestedView) ? requestedView : "data");
+})();
+</script></body></html>

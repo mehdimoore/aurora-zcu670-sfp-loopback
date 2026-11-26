@@ -1,0 +1,30 @@
+# Local Vivado projects and generated products
+/build/
+.Xil/
+.vivado-ai/
+*.xpr
+*.cache/
+*.gen/
+*.hw/
+*.ip_user_files/
+*.runs/
+*.sim/
+*.srcs/
+
+# Build results and debug captures
+*.bit
+*.bin
+*.ltx
+*.dcp
+*.jou
+*.log
+*.str
+*.backup.*
+*.wdb
+*.vcd
+*.pb
+*.rpx
+
+# Editor and desktop files
+*~
+.DS_Store
